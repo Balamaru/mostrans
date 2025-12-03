@@ -1,0 +1,10 @@
+FROM node:18.18.0-alpine
+
+WORKDIR /app
+COPY backend/package*.json ./
+RUN npm install --only=production
+
+COPY backend .
+
+EXPOSE 3000
+CMD ["npm", "start"]
