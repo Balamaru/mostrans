@@ -6,8 +6,9 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
+  origin: '*'
+  // origin: 'http://localhost:8080',
+  // credentials: true
 }));
 app.use(bodyParser.json());
 

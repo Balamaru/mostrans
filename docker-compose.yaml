@@ -3,20 +3,16 @@ version: "3.8"
 services:
 
   backend:
+    image: ${IMAGE_BACKEND}:${TAG}
     container_name: backend-app
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
     ports:
-      - "3000:3000"
+      - "4000:4000"
     networks:
       - appnet
 
   frontend:
+    image: ${IMAGE_FRONTEND}:${TAG}
     container_name: frontend-app
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
     ports:
       - "8080:80"
     depends_on:

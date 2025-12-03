@@ -1,52 +1,75 @@
+image: docker:latest
+
+# services:
+#   - name: docker:dind
+#     alias: thedockerhost
+
 stages:
   - build
   - deploy
 
 variables:
-  DOCKER_HOST: "tcp://docker:2375/"
-  DOCKER_DRIVER: overlay2
+  # DOCKER_HOST: "tcp://docker:2375/"
+  # DOCKER_DRIVER: overlay2
+  TAG: $CI_COMMIT_SHA
 
-services:
-  - docker:dind
-
-# -----------------------------
-# BUILD BACKEND
-# -----------------------------
 build_backend:
   stage: build
-  image: docker:latest
+  tags:
+    - runnernya
+  before_script:
+    - sudo apt-get update -y
+    - sudo apt-get install -y openssh-client sshpass
   script:
-    - docker build -t backend-app:latest -f Dockerfile.backend .
-  artifacts:
-    paths:
-      - backend/
+    - docker logout
+    - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    - docker build -t $IMAGE_BACKEND:$TAG -f ./backend/Dockerfile.backend ./backend && docker push $IMAGE_BACKEND:$TAG
+    # - docker logout
   only:
     - main
 
-# -----------------------------
-# BUILD FRONTEND
-# -----------------------------
 build_frontend:
   stage: build
-  image: docker:latest
+  needs:
+    - build_backend
+  tags:
+    - runnernya
+  before_script:
+    - sudo apt-get update -y
+    - sudo apt-get install -y openssh-client sshpass
   script:
-    - docker build -t frontend-app:latest -f Dockerfile.frontend .
-  artifacts:
-    paths:
-      - frontend/
+    - docker logout
+    - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    - docker build -t $IMAGE_FRONTEND:$TAG -f ./frontend/Dockerfile.frontend ./frontend && docker push $IMAGE_FRONTEND:$TAG
+    # - docker logout
   only:
     - main
 
-# -----------------------------
-# DEPLOY USING DOCKER COMPOSE
-# -----------------------------
 deploy:
   stage: deploy
-  image: docker:latest
+  # image: docker:latest
+  tags:
+    - runnernya
   before_script:
-    - apk add --no-cache docker-compose
+    - sudo apt-get update -y
+    - sudo apt-get install -y openssh-client sshpass
+    - echo "$ID_RSA" > id_rsa
+    - chmod 600 id_rsa
   script:
-    - docker-compose down || true
-    - docker-compose up -d --build
+    - scp -i id_rsa -o StrictHostKeyChecking=no docker-compose.yaml $SSH_USER@$SSH_HOST:/tmp/docker-compose.yaml
+    - |
+      ssh -i id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
+        export IMAGE_BACKEND=$IMAGE_BACKEND
+        export IMAGE_FRONTEND=$IMAGE_FRONTEND
+        export TAG=$TAG
+
+        cd /tmp
+
+        docker compose pull || docker-compose pull
+        docker compose down || docker-compose down
+        TAG=$TAG docker compose up -d || TAG=$TAG docker-compose up -d
+
+        rm /tmp/docker-compose.yaml
+      "
   only:
     - main
