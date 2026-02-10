@@ -54,7 +54,7 @@ pipeline {
 
     stage('Deploy Containers') {
         environment {
-            MAGE_BACKEND  = 'mostrans-backend'
+            IMAGE_BACKEND  = 'mostrans-backend'
             IMAGE_FRONTEND = 'mostrans-frontend'
             TAG = "${BUILD_NUMBER}"
         }
