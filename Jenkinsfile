@@ -67,7 +67,7 @@ pipeline {
 
                 docker run -d --name backend-app --network appnet -p 4000:4000 ${IMAGE_BACKEND}:${TAG}
                 sleep 5
-                docker run -d --name frontend-app --network appnet -p 8080:80 ${IMAGE_FRONTEND}:${TAG}
+                docker run -d --name frontend-app --network appnet -p 8081:80 ${IMAGE_FRONTEND}:${TAG}
                 docker ps
             '''
         }
