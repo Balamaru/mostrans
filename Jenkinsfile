@@ -17,11 +17,7 @@ pipeline {
       steps {
         container('kaniko') {
           sh '''
-            // mkdir -p /kaniko/.docker
-            // cp /kaniko/.docker/config.json/.dockerconfigjson /kaniko/.docker/config.json
-            // chmod 600 /kaniko/.docker/config.json
             ls -lah /kaniko/.docker
-            // cat /kaniko/.docker/.dockerconfigjson
           '''
         }
       }
