@@ -18,6 +18,8 @@ pipeline {
         container('kaniko') {
           sh '''
             ls -lah /kaniko/.docker
+            cp /kaniko/.docker/.dockerconfigjson /kaniko/.docker/config.json
+            chmod 600 /kaniko/.docker/config.json
           '''
         }
       }
