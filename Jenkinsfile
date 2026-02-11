@@ -19,7 +19,7 @@ pipeline {
           sh '''
             /kaniko/executor \
               --context ${WORKSPACE}/backend \
-              --dockerfile ${WORKSPACE}/Dockerfile.backend \
+              --dockerfile ${WORKSPACE}/backend/Dockerfile.backend \
               --destination balamaru/mostrans-backend:${BUILD_NUMBER}
           '''
         }
@@ -32,7 +32,7 @@ pipeline {
           sh '''
             /kaniko/executor \
               --context ${WORKSPACE}/frontend \
-              --dockerfile ${WORKSPACE}/Dockerfile.frontend \
+              --dockerfile ${WORKSPACE}/frontend/Dockerfile.frontend \
               --destination balamaru/mostrans-frontend:${BUILD_NUMBER}
           '''
         }
