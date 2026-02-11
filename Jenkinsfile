@@ -13,7 +13,7 @@ pipeline {
       }
     }
 
-    stage('Debg kaniko auth') {
+    stage('Debug kaniko auth') {
       steps {
         container('kaniko') {
           sh '''
