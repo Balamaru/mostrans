@@ -38,5 +38,15 @@ pipeline {
         }
       }
     }
+    stage('Debg kaniko auth') {
+      steps {
+        container('kaniko') {
+          sh '''
+            ls -lah /kaniko/.docker
+            cat /kaniko/.docker/.dockerconfigjson
+          '''
+        }
+      }
+    }
   }
 }
