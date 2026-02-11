@@ -17,10 +17,9 @@ pipeline {
       steps {
         container('kaniko') {
           sh '''
-            /kaniko/executor \
-              --context ${WORKSPACE}/backend \
-              --dockerfile ${WORKSPACE}/Dockerfile.backend \
-              --destination registry.example.com/mostrans/backend:${BUILD_NUMBER}
+            --context ${WORKSPACE}/backend \
+            --dockerfile ${WORKSPACE}/Dockerfile.backend \
+            --destination registry.example.com/mostrans/backend:${BUILD_NUMBER}
           '''
         }
       }
@@ -30,10 +29,9 @@ pipeline {
       steps {
         container('kaniko') {
           sh '''
-            /kaniko/executor \
-              --context ${WORKSPACE}/frontend \
-              --dockerfile ${WORKSPACE}/Dockerfile.frontend \
-              --destination registry.example.com/mostrans/frontend:${BUILD_NUMBER}
+            --context ${WORKSPACE}/frontend \
+            --dockerfile ${WORKSPACE}/Dockerfile.frontend \
+            --destination registry.example.com/mostrans/frontend:${BUILD_NUMBER}
           '''
         }
       }
