@@ -1,15 +1,8 @@
 pipeline {
   agent {
-    docker {
-      image 'docker:26-cli'
-      args '-v /var/run/docker.sock:/var/run/docker.sock'
+    kubernetes {
+      label 'kubeagent'
     }
-  }
-
-  environment {
-    BACKEND_IMAGE  = "mostrans-backend"
-    FRONTEND_IMAGE = "mostrans-frontend"
-    TAG      = "${BUILD_NUMBER}"
   }
 
   stages {
@@ -20,66 +13,29 @@ pipeline {
       }
     }
 
-    stage('Build Backend Image') {
+    stage('Backend Build') {
       steps {
-        dir('backend') {
+        container('backend') {
           sh '''
-            docker build \
-              -f Dockerfile.backend \
-              -t ${BACKEND_IMAGE}:${TAG} \
-              -t ${BACKEND_IMAGE}:latest .
+            cd backend
+            go mod tidy
+            go test ./...
+            go build -o app
           '''
         }
       }
     }
 
-    stage('Build Frontend Image') {
+    stage('Frontend Build') {
       steps {
-        dir('frontend') {
+        container('frontend') {
           sh '''
-            docker build \
-              -f Dockerfile.frontend \
-              -t ${FRONTEND_IMAGE}:${TAG} \
-              -t ${FRONTEND_IMAGE}:latest .
+            cd frontend
+            npm install
+            npm run build
           '''
         }
       }
-    }
-
-    stage('Docker Images') {
-      steps {
-        sh 'docker images | grep mostrans'
-      }
-    }
-
-    stage('Deploy Containers') {
-        environment {
-            IMAGE_BACKEND  = 'mostrans-backend'
-            IMAGE_FRONTEND = 'mostrans-frontend'
-            TAG = "${BUILD_NUMBER}"
-        }
-        steps {
-            sh '''
-                echo "🚀 Deploying containers with docker run"
-                docker rm -f backend-app frontend-app || true
-
-                docker network inspect appnet >/dev/null 2>&1 || docker network create appnet
-
-                docker run -d --name backend-app --network appnet -p 4000:4000 ${IMAGE_BACKEND}:${TAG}
-                sleep 5
-                docker run -d --name frontend-app --network appnet -p 8081:80 ${IMAGE_FRONTEND}:${TAG}
-                docker ps
-            '''
-        }
-    }
-  }
-
-  post {
-    success {
-      echo "✅ Build sukses"
-    }
-    failure {
-      echo "❌ Build gagal"
     }
   }
 }
