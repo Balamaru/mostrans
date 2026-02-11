@@ -1,14 +1,16 @@
 pipeline {
   agent {
     kubernetes {
-      label 'kube-agent'
+      inheritFrom 'kube-agent'
     }
   }
 
   stages {
 
     stage('Checkout') {
-      steps { checkout scm }
+      steps {
+        checkout scm
+      }
     }
 
     stage('Build Backend Image') {
