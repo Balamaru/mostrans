@@ -8,31 +8,30 @@ pipeline {
   stages {
 
     stage('Checkout') {
-      steps {
-        checkout scm
-      }
+      steps { checkout scm }
     }
 
-    stage('Backend Build') {
+    stage('Build Backend Image') {
       steps {
-        container('backend') {
+        container('kaniko') {
           sh '''
-            cd backend
-            go mod tidy
-            go test ./...
-            go build -o app
+            /kaniko/executor \
+              --context ${WORKSPACE}/backend \
+              --dockerfile ${WORKSPACE}/Dockerfile.backend \
+              --destination registry.example.com/mostrans/backend:${BUILD_NUMBER}
           '''
         }
       }
     }
 
-    stage('Frontend Build') {
+    stage('Build Frontend Image') {
       steps {
-        container('frontend') {
+        container('kaniko') {
           sh '''
-            cd frontend
-            npm install
-            npm run build
+            /kaniko/executor \
+              --context ${WORKSPACE}/frontend \
+              --dockerfile ${WORKSPACE}/Dockerfile.frontend \
+              --destination registry.example.com/mostrans/frontend:${BUILD_NUMBER}
           '''
         }
       }
