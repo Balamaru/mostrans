@@ -13,31 +13,6 @@ pipeline {
       }
     }
 
-    stage('Build Backend Image') {
-      steps {
-        container('kaniko') {
-          sh '''
-            /kaniko/executor \
-              --context ${WORKSPACE}/backend \
-              --dockerfile ${WORKSPACE}/backend/Dockerfile.backend \
-              --destination balamaru/mostrans-backend:${BUILD_NUMBER}
-          '''
-        }
-      }
-    }
-
-    stage('Build Frontend Image') {
-      steps {
-        container('kaniko') {
-          sh '''
-            /kaniko/executor \
-              --context ${WORKSPACE}/frontend \
-              --dockerfile ${WORKSPACE}/frontend/Dockerfile.frontend \
-              --destination balamaru/mostrans-frontend:${BUILD_NUMBER}
-          '''
-        }
-      }
-    }
     stage('Debg kaniko auth') {
       steps {
         container('kaniko') {
@@ -48,5 +23,31 @@ pipeline {
         }
       }
     }
+
+    // stage('Build Backend Image') {
+    //   steps {
+    //     container('kaniko') {
+    //       sh '''
+    //         /kaniko/executor \
+    //           --context ${WORKSPACE}/backend \
+    //           --dockerfile ${WORKSPACE}/backend/Dockerfile.backend \
+    //           --destination balamaru/mostrans-backend:${BUILD_NUMBER}
+    //       '''
+    //     }
+    //   }
+    // }
+
+    // stage('Build Frontend Image') {
+    //   steps {
+    //     container('kaniko') {
+    //       sh '''
+    //         /kaniko/executor \
+    //           --context ${WORKSPACE}/frontend \
+    //           --dockerfile ${WORKSPACE}/frontend/Dockerfile.frontend \
+    //           --destination balamaru/mostrans-frontend:${BUILD_NUMBER}
+    //       '''
+    //     }
+    //   }
+    // }
   }
 }
