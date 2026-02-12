@@ -30,7 +30,7 @@ pipeline {
             /kaniko/executor \
               --context ${WORKSPACE}/backend \
               --dockerfile ${WORKSPACE}/backend/Dockerfile.backend \
-              --destination balamaru/mostrans-backend:${BUILD_NUMBER}
+              --destination balamaru/mostrans-backend:${BUILD_NUMBER} --docker-config /kaniko/.docker
           '''
         }
       }
