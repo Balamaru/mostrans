@@ -81,6 +81,7 @@ spec:
               --platform linux/amd64 \
               --progress=plain \
               --push \
+              -f backend/Dockerfile.backend \
               -t docker.io/balamaru/mostrans-backend:${BUILD_NUMBER} \
               -t docker.io/balamaru/mostrans-backend:latest \
               backend
@@ -97,7 +98,7 @@ spec:
               --platform linux/amd64 \
               --progress=plain \
               --push \
-              -f backend/Dockerfile.backend \
+              -f frontend/Dockerfile.frontend \
               -t docker.io/balamaru/mostrans-frontend:${BUILD_NUMBER} \
               -t docker.io/balamaru/mostrans-frontend:latest \
               frontend
