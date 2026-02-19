@@ -63,6 +63,7 @@ spec:
               --driver-opt cacert=/certs/ca.pem \
               --driver-opt cert=/certs/cert.pem \
               --driver-opt key=/certs/key.pem \
+              --driver-opt servername=buildkitd \
               $BUILDKIT_HOST || true
 
             docker buildx use buildkit-remote
