@@ -1,7 +1,40 @@
 pipeline {
+
+  environment {
+    // Jenkins credential (Docker Hub)
+    DOCKERHUB = credentials('dockerhub')
+
+    // BuildKit endpoint (namespace default)
+    BUILDKIT_HOST = 'tcp://buildkitd.default.svc.cluster.local:1234'
+  }
+
   agent {
     kubernetes {
-      inheritFrom 'kube-agent'
+      yaml '''
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: docker
+    image: waynewu411/docker-cli:1.0
+    command:
+    - cat
+    tty: true
+    env:
+    - name: DOCKER_BUILDKIT
+      value: "1"
+    - name: BUILDKIT_HOST
+      value: tcp://buildkitd.default.svc.cluster.local:1234
+    volumeMounts:
+    - name: certs
+      mountPath: /certs
+      readOnly: true
+
+  volumes:
+  - name: certs
+    secret:
+      secretName: buildkit-client-certs
+'''
     }
   }
 
@@ -13,40 +46,57 @@ pipeline {
       }
     }
 
-    // stage('Debug kaniko auth') {
-    //   steps {
-    //     container('kaniko') {
-    //       sh '''
-    //         ls -lah /kaniko/.docker
-    //       '''
-    //     }
-    //   }
-    // }
-
-    stage('Build Backend Image') {
+    stage('Docker Login') {
       steps {
-        container('kaniko') {
+        container('docker') {
           sh '''
-            /kaniko/executor \
-              --context ${WORKSPACE}/backend \
-              --dockerfile ${WORKSPACE}/backend/Dockerfile.backend \
-              --destination balamaru/mostrans-backend:${BUILD_NUMBER}
+            echo "$DOCKERHUB_PSW" | docker login \
+              -u "$DOCKERHUB_USR" \
+              --password-stdin
           '''
         }
       }
     }
 
-    stage('Build Frontend Image') {
+    stage('Build & Push Backend') {
       steps {
-        container('kaniko') {
+        container('docker') {
           sh '''
-            /kaniko/executor \
-              --context ${WORKSPACE}/frontend \
-              --dockerfile ${WORKSPACE}/frontend/Dockerfile.frontend \
-              --destination balamaru/mostrans-frontend:${BUILD_NUMBER}
+            docker buildx build \
+              --builder default \
+              --progress=plain \
+              --push \
+              --tag docker.io/$DOCKERHUB_USR/mostrans-backend:${BUILD_NUMBER} \
+              --tag docker.io/$DOCKERHUB_USR/mostrans-backend:latest \
+              backend
           '''
         }
       }
+    }
+
+    stage('Build & Push Frontend') {
+      steps {
+        container('docker') {
+          sh '''
+            docker buildx build \
+              --builder default \
+              --progress=plain \
+              --push \
+              --tag docker.io/$DOCKERHUB_USR/mostrans-frontend:${BUILD_NUMBER} \
+              --tag docker.io/$DOCKERHUB_USR/mostrans-frontend:latest \
+              frontend
+          '''
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      echo "✅ Images successfully built & pushed using BuildKit"
+    }
+    failure {
+      echo "❌ Build failed"
     }
   }
 }
