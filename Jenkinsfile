@@ -55,6 +55,8 @@ spec:
       steps {
         container('docker') {
           sh '''
+            docker buildx rm buildkit-remote || true
+
             docker buildx create \
               --name buildkit-remote \
               --driver remote \
